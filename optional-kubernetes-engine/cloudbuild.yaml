@@ -11,5 +11,5 @@ steps:
   - filename='bookshelf-frontend.yaml'
   - --image=gcr.io/enterprisedemos-258322/bookshelf:latest
   - --location=us-central1-a
-  - --cluster=democluster
+  - --cluster=bookshelf
   dir: optional-kubernetes-engine
