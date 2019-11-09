@@ -33,11 +33,11 @@ create-service:
 	kubectl create -f bookshelf-service.yaml
 
 .PHONY: deploy-frontend
-deploy-frontend: push template
+deploy-frontend: push 
 	kubectl create -f bookshelf-frontend.yaml
 
 .PHONY: deploy-worker
-deploy-worker: push template
+deploy-worker: push 
 	kubectl create -f bookshelf-worker.yaml
 
 .PHONY: deploy
