@@ -6,7 +6,9 @@ steps:
   args: ['push', 'gcr.io/enterprisedemos-258322/bookshelf']
   dir: optional-kubernetes-engine
 - name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf'
   args:
   - replace
-  - -f=bookshelf-frontend.yaml
-  dir: optional-kubernetes-engine
+  - --filename=optional-kubernetes-engine/bookshelf-frontend.yaml
