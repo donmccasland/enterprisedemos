@@ -5,11 +5,10 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/enterprisedemos-258322/bookshelf']
   dir: optional-kubernetes-engine
-- name: 'gcr.io/cloud-builders/gke-deploy'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-a'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf'
   args:
-  - run
-  - filename='k8s_config'
-  - --image=gcr.io/enterprisedemos-258322/bookshelf:latest
-  - --location=us-central1-a
-  - --cluster=bookshelf
-  dir: optional-kubernetes-engine
+  - replace
+  - --filename=optional-kubernetes-engine/bookshelf-frontend.yaml
