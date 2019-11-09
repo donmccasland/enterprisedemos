@@ -8,7 +8,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gke-deploy'
   args:
   - run
-  - filename='bookshelf-frontend.yaml'
+  - filename='k8s_config'
   - --image=gcr.io/enterprisedemos-258322/bookshelf:latest
   - --location=us-central1-a
   - --cluster=bookshelf
