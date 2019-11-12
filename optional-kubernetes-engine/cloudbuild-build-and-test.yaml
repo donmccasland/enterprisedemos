@@ -1,0 +1,63 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-f', 'Dockerfile', '--tag=gcr.io/enterprisedemos-258322/bookshelf:dev', '.']
+  dir: optional-kubernetes-engine
+  id: 'Build image'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/enterprisedemos-258322/bookshelf:dev']
+  dir: optional-kubernetes-engine
+  id: 'Push to dev'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-service.yaml
+  id: 'Apply bookshelf-service.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-frontend.yaml
+  id: 'Apply bookshelf-frontend.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-worker.yaml
+  id: 'Apply bookshelf-worker.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - set
+  - image
+  - deployment/bookshelf-frontend
+  - bookshelf-app=gcr.io/enterprisedemos-258322/bookshelf:dev
+  id: 'Set frontend image to dev'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - set
+  - image
+  - deployment/bookshelf-worker
+  - bookshelf-app=gcr.io/enterprisedemos-258322/bookshelf:dev
+  id: 'Set worker image to dev'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-dev'
+  args:
+  - rollout
+  - status
+  - --watch=true
+  - deployment/bookshelf-worker
+  id: 'Wait for rollout'

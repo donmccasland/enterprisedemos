@@ -1,0 +1,67 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['pull', 'gcr.io/enterprisedemos-258322/bookshelf:staging']
+  dir: optional-kubernetes-engine
+  id: 'Pull staging image'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['tag', 'gcr.io/enterprisedemos-258322/bookshelf:staging', 'gcr.io/enterprisedemos-258322/bookshelf:latest']
+  dir: optional-kubernetes-engine
+  id: 'Tag staging as latest'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/enterprisedemos-258322/bookshelf:latest']
+  dir: optional-kubernetes-engine
+  id: 'Pushing latest image'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-service.yaml
+  id: 'Apply bookshelf-service.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-frontend.yaml
+  id: 'Apply bookshelf-frontend.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - apply
+  - --filename=optional-kubernetes-engine/bookshelf-worker.yaml
+  id: 'Apply bookshelf-worker.yaml'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - set
+  - image
+  - deployment/bookshelf-frontend
+  - bookshelf-app=gcr.io/enterprisedemos-258322/bookshelf:prod
+  id: 'Set frontend image to prod'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - set
+  - image
+  - deployment/bookshelf-worker
+  - bookshelf-app=gcr.io/enterprisedemos-258322/bookshelf:prod
+  id: 'Set worker image to prod'
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-c'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=bookshelf-prod'
+  args:
+  - rollout
+  - status
+  - --watch=true
+  - deployment/bookshelf-worker
+  id: 'Wait for rollout'

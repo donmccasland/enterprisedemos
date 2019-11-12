@@ -3,17 +3,22 @@ GCLOUD_PROJECT:=$(shell gcloud config list project --format="value(core.project)
 .PHONY: all
 all: deploy
 
-.PHONY: create-cluster
-create-cluster:
-	gcloud container clusters create bookshelf \
+.PHONY: create-clusters
+create-clusters:
+	gcloud container clusters create bookshelf-dev \
 		--scopes "cloud-platform" \
 		--num-nodes 2
-	gcloud container clusters get-credentials bookshelf
+	gcloud container clusters create bookshelf-staging \
+		--scopes "cloud-platform" \
+		--num-nodes 2
+	gcloud container clusters create bookshelf-prod \
+		--scopes "cloud-platform" \
+		--num-nodes 2
 
 .PHONY: create-bucket
 create-bucket:
 	gsutil mb gs://$(GCLOUD_PROJECT)
-    gsutil defacl set public-read gs://$(GCLOUD_PROJECT)
+	gsutil defacl set public-read gs://$(GCLOUD_PROJECT)
 
 .PHONY: build
 build:
@@ -28,20 +33,35 @@ template:
 	sed -i ".tmpl" "s/\[GCLOUD_PROJECT\]/$(GCLOUD_PROJECT)/g" bookshelf-frontend.yaml
 	sed -i ".tmpl" "s/\[GCLOUD_PROJECT\]/$(GCLOUD_PROJECT)/g" bookshelf-worker.yaml
 
-.PHONY: create-service
-create-service:
+.PHONY: create-services
+create-services:
+	gcloud container clusters get-credentials bookshelf-dev
+	kubectl create -f bookshelf-service.yaml
+	gcloud container clusters get-credentials bookshelf-staging
+	kubectl create -f bookshelf-service.yaml
+	gcloud container clusters get-credentials bookshelf-prod
 	kubectl create -f bookshelf-service.yaml
 
-.PHONY: deploy-frontend
-deploy-frontend: push 
+.PHONY: deploy-frontends
+deploy-frontends: push 
+	gcloud container clusters get-credentials bookshelf-dev
+	kubectl create -f bookshelf-frontend.yaml
+	gcloud container clusters get-credentials bookshelf-staging
+	kubectl create -f bookshelf-frontend.yaml
+	gcloud container clusters get-credentials bookshelf-prod
 	kubectl create -f bookshelf-frontend.yaml
 
-.PHONY: deploy-worker
-deploy-worker: push 
+.PHONY: deploy-workers
+deploy-workers: push 
+	gcloud container clusters get-credentials bookshelf-dev
+	kubectl create -f bookshelf-worker.yaml
+	gcloud container clusters get-credentials bookshelf-staging
+	kubectl create -f bookshelf-worker.yaml
+	gcloud container clusters get-credentials bookshelf-prod
 	kubectl create -f bookshelf-worker.yaml
 
 .PHONY: deploy
-deploy: deploy-frontend deploy-worker create-service
+deploy: deploy-frontends deploy-workers create-services
 
 .PHONY: delete
 delete:

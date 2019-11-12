@@ -30,7 +30,7 @@ The scopes specified in the `--scopes` argument allows nodes in the cluster to a
 
 Alternatively, you can use make:
 
-    make create-cluster
+    make create-clusters
 
 ## Create a Cloud Storage bucket
 
@@ -68,7 +68,7 @@ Update `bookshelf-frontend.yaml` with your Project ID or use `make template`. Th
 
 Alternatively, you can use make:
 
-    make deploy-frontend
+    make deploy-frontends
 
 Once the resources are created, there should be 3 `bookshelf-frontend` pods on the cluster. To see the pods and ensure that they are running:
 
@@ -92,6 +92,6 @@ Update `bookshelf-worker.yaml` with your Project ID or use `make template`. This
 
 Alternatively, you can use make:
 
-    make deploy-worker
+    make deploy-workers
 
 Once again, use `kubectl get pods` to check the status of the worker pods. Once the worker pods are up and running, you should be able to create books on the frontend and the workers will handle updating book information in the background.
